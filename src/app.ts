@@ -6,10 +6,11 @@ const app = express();
 
 // ✅ Configuración de CORS
 app.use(cors({
-  origin: "http://localhost:4200", // tu Angular
+  origin: "https://integraciones.tierragro.com", // frontend prod
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 
 // ✅ Middleware para JSON
 app.use(express.json());
