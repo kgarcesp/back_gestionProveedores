@@ -97,37 +97,30 @@ export default class ControllerListaPrecios {
    * - Llama al caso de uso `UpdateLists` para realizar la actualización.
    * - Devuelve un mensaje de éxito o error según corresponda.
    */
-  public updatePrice = async (req: Request, res: Response) => {
+    public updatePrice = async (req: Request, res: Response) => {
     if (!req.body?.data || !Array.isArray(req.body.data)) {
-      return this.sendResponse(
-        res,
-        400,
-        false,
-        null,
-        "Datos inválidos",
-        ["Se requiere un arreglo de datos"]
-      );
+      return res.status(400).json({
+        success: false,
+        message: "Datos inválidos",
+        errors: ["Se requiere un arreglo de datos"],
+      });
     }
 
     try {
       const result = await this.updateListsFinish.updateListsPrecios(req.body.data);
-      return this.sendResponse(
-        res,
-        200,
-        true,
-        result,
-        "Lista de precios actualizada correctamente"
-      );
+      return res.status(200).json({
+        success: true,
+        message: "Lista de precios actualizada correctamente",
+        data: result,
+      });
     } catch (error: any) {
       console.error("Error en updatePrice:", error);
-      return this.sendResponse(
-        res,
-        500,
-        false,
-        null,
-        "Error actualizando lista de precios",
-        [error.message]
-      );
+      return res.status(500).json({
+        success: false,
+        message: "Error actualizando lista de precios",
+        errors: [error.message],
+      });
     }
   };
 }
+

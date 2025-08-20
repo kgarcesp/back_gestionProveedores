@@ -1,4 +1,4 @@
-import PriceListUpdate from "../domain/PriceListUpdate";
+// src/services/updateLists.ts
 import RepositoryListPrecios from "../repositories/repositoryPriceList";
 
 class UpdateLists {
@@ -8,24 +8,22 @@ class UpdateLists {
     this.repository = new RepositoryListPrecios();
   }
 
-async updateListsPrecios(data: any[]) {
-  try {
-    const entities = data.map(item => new PriceListUpdate(item));
-    
-    const adapted = entities.map(e => ({
-      id: Number(e.COD_PROV), 
-      costo_unitario: Number(e.NEW_COSTO_UNIT),
-      descuento1: 0,
-      descuento2: 0
-    }));
+  async updateListsPrecios(data: any[]) {
+    try {
+      // Adaptamos los datos solo con los campos válidos
+      const adapted = data.map((item) => ({
+        id: Number(item.id), // update por id
+        ...(item.costo_unitario !== undefined && { costo_unitario: Number(item.costo_unitario) }),
+        ...(item.descuento1 !== undefined && { descuento1: Number(item.descuento1) }),
+        ...(item.descuento2 !== undefined && { descuento2: Number(item.descuento2) }),
+      }));
 
-    return await this.repository.updateListPrice(adapted);
-  } catch (error) {
-    console.error("Error en updateListsPrecios:", error);
-    throw error;
+      return await this.repository.updateListPrice(adapted);
+    } catch (error) {
+      console.error("Error en updateListsPrecios:", error);
+      throw error;
+    }
   }
-}
-
 }
 
 export default UpdateLists;

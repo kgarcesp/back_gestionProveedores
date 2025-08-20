@@ -8,14 +8,14 @@ export interface PriceListItem {
   PROVEEDOR?: number | null;             // id del proveedor
   // agrega aquí nuevos campos que vayan a compartirse entre capas
 }
-
+// src/types/priceList.ts
 export interface UpdatePriceListItem {
   id: number;
-  costo_unitario: number | string;
-  descuento1: number | string;
-  descuento2: number | string;
-  // agrega campos extra si son necesarios para la actualización
+  costo_unitario?: number | string;
+  descuento1?: number | string;
+  descuento2?: number | string;
 }
+
 
 
 export interface SupplierPriceRow {
