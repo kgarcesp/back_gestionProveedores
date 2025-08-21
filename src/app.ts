@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import priceListRoutes from "../src/microprojects/priceList/interfaces/routes/routerPriceList";
+import priceListRoutes from "./microprojects/priceList/interfaces/routes/routerPriceList";
 
 const app = express();
 
