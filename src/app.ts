@@ -4,13 +4,12 @@ import priceListRoutes from "../src/microprojects/priceList/interfaces/routes/ro
 
 const app = express();
 
-// ✅ Configuración de CORS
+// ✅ Configuración de CORS (abrimos para todo mientras pruebas)
 app.use(cors({
-  origin: "https://integraciones.tierragro.com", // frontend prod
+  origin: "*", // cualquier origen mientras pruebas
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
-
 
 // ✅ Middleware para JSON
 app.use(express.json());
