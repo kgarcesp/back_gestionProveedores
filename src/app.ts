@@ -16,6 +16,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ✅ Montar rutas
-app.use("/api/priceList", priceListRoutes);
+app.use("/api/price-lists", priceListRoutes);
 
 export default app;

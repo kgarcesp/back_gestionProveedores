@@ -73,6 +73,7 @@ export default class ControllerListaPrecios {
    * - Devuelve los datos obtenidos o un error si falla la consulta.
    */
   public seeListPrice = async (req: Request, res: Response) => {
+    
     try {
       const { proveedor } = req.query;
       const result = await this.priceLists.getCombinedPrices(proveedor as string);
@@ -122,5 +123,25 @@ export default class ControllerListaPrecios {
       });
     }
   };
+
+
+public  dateValidity = async (req: Request, res: Response) => {
+      
+    try {
+      const { fechaI, fechaF } = req.query;
+      const result = await this.priceLists.getCombinedPrices(fechaI as );
+      return this.sendResponse(res, 200, true, result, "Datos obtenidos correctamente");
+    } catch (error: any) {
+      console.error("Error en seeListPrice:", error);
+      return this.sendResponse(
+        res,
+        500,
+        false,
+        null,
+        "Error al obtener la lista de precios",
+        [error.message]
+      );
+    }
+}
 }
 
