@@ -1,5 +1,6 @@
 import pool from "../../../config/database";
 import { PriceListItem, UpdatePriceListItem, SupplierPriceRow } from "../../../shared/types/priceList";
+import { DateValidity } from "../domain/dateValidity";
 
 export default class RepositoryListPrecios {
   public async insertarListPrecios(data: PriceListItem[]): Promise<SupplierPriceRow[]> {
@@ -84,6 +85,41 @@ export default class RepositoryListPrecios {
       client.release();
     }
   }
+
+
+public async dateValidity(data: DateValidity[]): Promise<DateValidity[]> {
+  const client = await pool.connect();
+  try {
+    const upserted: DateValidity[] = [];
+
+    for (const item of data) {
+      const result = await client.query(
+        `
+        INSERT INTO date_validity (id_proveedor, fecha_inicio, fecha_fin)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (id_proveedor)
+        DO UPDATE SET fecha_inicio = EXCLUDED.fecha_inicio,
+                      fecha_fin = EXCLUDED.fecha_fin
+        RETURNING id, id_proveedor, fecha_inicio, fecha_fin
+        `,
+        [item.idProveedor, item.fecha_inicio, item.fecha_fin]
+      );
+
+      if (result.rows[0]) {
+        upserted.push(result.rows[0]);
+      }
+    }
+
+    return upserted;
+  } catch (error: any) {
+    throw new Error(`Error en dateValidity: ${error.message}`);
+  } finally {
+    client.release();
+  }
+}
+
+
+
 
   public async updateListPrice(data: UpdatePriceListItem[]): Promise<{
     updatedCount: number;

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import GetListaPrecios from "../../usecases/getPriceList";
 import SeePriceLists from "../../usecases/seePriceLists";
 import UpdateLists from "../../usecases/updateLists";
+import DateValidityUsecase from "../../usecases/dateValidityUpdate";
 
 export default class ControllerListaPrecios {
   
@@ -9,6 +10,7 @@ export default class ControllerListaPrecios {
   private registeListPrecios = new GetListaPrecios();
   private priceLists = new SeePriceLists();
   private updateListsFinish = new UpdateLists();
+  private dateValidityUsecase = new DateValidityUsecase(); // ✅ instanciamos
 
   /**
    * Método centralizado para enviar respuestas HTTP con un formato consistente.
@@ -113,6 +115,7 @@ export default class ControllerListaPrecios {
         success: true,
         message: "Lista de precios actualizada correctamente",
         data: result,
+        
       });
     } catch (error: any) {
       console.error("Error en updatePrice:", error);
@@ -125,23 +128,40 @@ export default class ControllerListaPrecios {
   };
 
 
-public  dateValidity = async (req: Request, res: Response) => {
-      
+  public dateValidity = async (req: Request, res: Response) => {
+    
+    if (!req.body?.data || !Array.isArray(req.body.data)) {      
+      return this.sendResponse(
+        res,
+        400,
+        false,
+        null,
+        "Datos inválidos",
+        ["Se requiere un arreglo de datos"]
+      );
+    }
+
     try {
-      const { fechaI, fechaF } = req.query;
-      const result = await this.priceLists.getCombinedPrices(fechaI as );
-      return this.sendResponse(res, 200, true, result, "Datos obtenidos correctamente");
+
+      const result = await this.dateValidityUsecase.updateValidityDate(req.body.data);
+      return this.sendResponse(
+        res,
+        200,
+        true,
+        result,
+        "Validez de fechas actualizada correctamente"
+      );
     } catch (error: any) {
-      console.error("Error en seeListPrice:", error);
+      console.error("Error en dateValidity:", error);
       return this.sendResponse(
         res,
         500,
         false,
         null,
-        "Error al obtener la lista de precios",
+        "Error actualizando validez de fechas",
         [error.message]
       );
     }
-}
+  };
 }
 

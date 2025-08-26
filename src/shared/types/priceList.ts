@@ -16,7 +16,12 @@ export interface UpdatePriceListItem {
   descuento2?: number | string;
 }
 
-
+export interface dateValidity {
+  id: number;
+  idProveedor?: number | string;
+  fecha_inicio?: Date | string;
+  fecha_fin?: Date | string;
+}
 
 export interface SupplierPriceRow {
   id: number;
