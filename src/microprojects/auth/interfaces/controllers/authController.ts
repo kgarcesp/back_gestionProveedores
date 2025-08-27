@@ -23,6 +23,7 @@ export const login = (req: Request, res: Response) => {
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
 
   return res.json({
+    success:true,
     message: "Login exitoso",
     token,
   });
