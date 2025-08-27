@@ -10,17 +10,17 @@ export default class ControllerListaPrecios {
   private registeListPrecios = new GetListaPrecios();
   private priceLists = new SeePriceLists();
   private updateListsFinish = new UpdateLists();
-  private dateValidityUsecase = new DateValidityUsecase(); // ✅ instanciamos
+  private dateValidityUsecase = new DateValidityUsecase();
 
   /**
    * Método centralizado para enviar respuestas HTTP con un formato consistente.
    * 
-   * @param res     - Objeto de respuesta de Express.
-   * @param status  - Código de estado HTTP.
-   * @param success - Indica si la operación fue exitosa.
-   * @param data    - Datos a devolver en la respuesta.
-   * @param message - Mensaje descriptivo del resultado.
-   * @param errors  - Lista de errores (opcional).
+   * @param res     Objeto de respuesta de Express
+   * @param status  Código de estado HTTP
+   * @param success Indica si la operación fue exitosa
+   * @param data    Datos a devolver en la respuesta
+   * @param message Mensaje descriptivo del resultado
+   * @param errors  Lista de errores (opcional)
    */
   private sendResponse(
     res: Response,
@@ -34,11 +34,11 @@ export default class ControllerListaPrecios {
   }
 
   /**
-   * Inserta una nueva lista de precios en el sistema.
+   * Inserta una nueva lista de precios.
    * 
-   * - Valida que la estructura de datos recibida sea un arreglo.
-   * - Llama al caso de uso `GetListaPrecios` para procesar la inserción.
-   * - Devuelve un mensaje de éxito o error según corresponda.
+   * - Valida que los datos recibidos sean un arreglo.
+   * - Llama al caso de uso `GetListaPrecios` para registrar los precios.
+   * - Devuelve un mensaje de éxito o error.
    */
   public insertListPrecios = async (req: Request, res: Response) => {
     if (!req.body?.data || !Array.isArray(req.body.data)) {
@@ -47,121 +47,70 @@ export default class ControllerListaPrecios {
 
     try {
       const result = await this.registeListPrecios.newListPrecios(req.body.data);
-      return this.sendResponse(
-        res,
-        200,
-        true,
-        result,
-        "Lista de precios procesada correctamente"
-      );
+      return this.sendResponse(res, 200, true, result, "Lista de precios procesada correctamente");
     } catch (error: any) {
       console.error("Error en insertListPrecios:", error);
-      return this.sendResponse(
-        res,
-        500,
-        false,
-        null,
-        error.message || "Error interno del servidor",
-        [error.message]
-      );
+      return this.sendResponse(res, 500, false, null, error.message || "Error interno del servidor", [error.message]);
     }
   };
 
   /**
-   * Obtiene la lista de precios existente.
+   * Obtiene listas de precios existentes.
    * 
-   * - Permite filtrar por proveedor mediante el parámetro de consulta `proveedor`.
-   * - Llama al caso de uso `SeePriceLists` para obtener los datos combinados.
-   * - Devuelve los datos obtenidos o un error si falla la consulta.
+   * - Permite filtrar por proveedor mediante el query param `proveedor`.
+   * - Llama al caso de uso `SeePriceLists` para recuperar los datos.
+   * - Devuelve las listas obtenidas o un error si ocurre un fallo.
    */
   public seeListPrice = async (req: Request, res: Response) => {
-    
     try {
       const { proveedor } = req.query;
       const result = await this.priceLists.getCombinedPrices(proveedor as string);
       return this.sendResponse(res, 200, true, result, "Datos obtenidos correctamente");
     } catch (error: any) {
       console.error("Error en seeListPrice:", error);
-      return this.sendResponse(
-        res,
-        500,
-        false,
-        null,
-        "Error al obtener la lista de precios",
-        [error.message]
-      );
+      return this.sendResponse(res, 500, false, null, "Error al obtener la lista de precios", [error.message]);
     }
   };
 
   /**
-   * Actualiza una lista de precios existente.
+   * Actualiza precios existentes.
    * 
-   * - Valida que la estructura de datos recibida sea un arreglo.
-   * - Llama al caso de uso `UpdateLists` para realizar la actualización.
-   * - Devuelve un mensaje de éxito o error según corresponda.
+   * - Valida que los datos recibidos sean un arreglo.
+   * - Llama al caso de uso `UpdateLists` para ejecutar la actualización.
+   * - Devuelve un mensaje de confirmación o error.
    */
-    public updatePrice = async (req: Request, res: Response) => {
+  public updatePrice = async (req: Request, res: Response) => {
     if (!req.body?.data || !Array.isArray(req.body.data)) {
-      return res.status(400).json({
-        success: false,
-        message: "Datos inválidos",
-        errors: ["Se requiere un arreglo de datos"],
-      });
+      return this.sendResponse(res, 400, false, null, "Datos inválidos", ["Se requiere un arreglo de datos"]);
     }
 
     try {
       const result = await this.updateListsFinish.updateListsPrecios(req.body.data);
-      return res.status(200).json({
-        success: true,
-        message: "Lista de precios actualizada correctamente",
-        data: result,
-        
-      });
+      return this.sendResponse(res, 200, true, result, "Lista de precios actualizada correctamente");
     } catch (error: any) {
       console.error("Error en updatePrice:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error actualizando lista de precios",
-        errors: [error.message],
-      });
+      return this.sendResponse(res, 500, false, null, "Error actualizando lista de precios", [error.message]);
     }
   };
 
-
+  /**
+   * Inserta o actualiza la vigencia de listas de precios (fecha de inicio y fin).
+   * 
+   * - Valida que los datos recibidos sean un arreglo.
+   * - Llama al caso de uso `DateValidityUsecase` para aplicar la lógica de inserción/actualización.
+   * - Devuelve el resultado de la operación o un error.
+   */
   public dateValidity = async (req: Request, res: Response) => {
-    
     if (!req.body?.data || !Array.isArray(req.body.data)) {      
-      return this.sendResponse(
-        res,
-        400,
-        false,
-        null,
-        "Datos inválidos",
-        ["Se requiere un arreglo de datos"]
-      );
+      return this.sendResponse(res, 400, false, null, "Datos inválidos", ["Se requiere un arreglo de datos"]);
     }
 
     try {
-
       const result = await this.dateValidityUsecase.updateValidityDate(req.body.data);
-      return this.sendResponse(
-        res,
-        200,
-        true,
-        result,
-        "Validez de fechas actualizada correctamente"
-      );
+      return this.sendResponse(res, 200, true, result, "Validez de fechas actualizada correctamente");
     } catch (error: any) {
       console.error("Error en dateValidity:", error);
-      return this.sendResponse(
-        res,
-        500,
-        false,
-        null,
-        "Error actualizando validez de fechas",
-        [error.message]
-      );
+      return this.sendResponse(res, 500, false, null, "Error actualizando validez de fechas", [error.message]);
     }
   };
 }
-

@@ -10,7 +10,7 @@ class UpdateLists {
 
   async updateListsPrecios(data: any[]) {
     try {
-      // Adaptamos los datos solo con los campos válidos
+
       const adapted = data.map((item) => ({
         id: Number(item.id), // update por id
         ...(item.costo_unitario !== undefined && { costo_unitario: Number(item.costo_unitario) }),
