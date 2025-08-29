@@ -5,17 +5,22 @@ import routerAuth from "./microprojects/auth/interfaces/routes/routerAuth";
 
 const app = express();
 
-app.use(cors({
-  origin: "*", // cualquier origen mientras pruebas
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+// ✅ Configuración de CORS
+app.use(
+  cors({
+    origin: "*", // mientras pruebas
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-token"],
+  })
+);
 
+// ✅ Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
+// ✅ Rutas
 app.use("/api/price-lists", priceListRoutes);
 app.use("/api/auth", routerAuth);
 
+// ✅ Exportas SOLO la app (sin listen)
 export default app;
