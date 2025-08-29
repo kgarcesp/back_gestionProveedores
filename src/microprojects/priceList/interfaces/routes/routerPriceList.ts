@@ -5,7 +5,6 @@ import { authMiddleware } from "../../../../shared/auth/authMiddleware"
 const router = Router();
 const controller = new ControllerListaPrecios();
 
-// ✅ Todas las rutas protegidas con JWT
 router.post("/validate", authMiddleware, controller.insertListPrecios);
 router.get("/validate-products", authMiddleware, controller.seeListPrice);
 router.post("/update-prices", authMiddleware, controller.updatePrice);

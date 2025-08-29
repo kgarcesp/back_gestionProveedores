@@ -8,7 +8,7 @@ export const login = (req: Request, res: Response) => {
 
 
 
-  if (username !== "admin" || password !== "1234") {
+  if (username !== "8903166400" || password !== "1000000101") {
     return res.status(401).json({ error: "Credenciales inválidas" });
   }
 
