@@ -4,10 +4,11 @@ import http from "http";
 import fs from "fs";
 
 const PORT = Number(process.env.PORT) || 3003;
-const NODE_ENV = process.env.NODE_ENV || "development";
+const NODE_ENV = process.env.NODE_ENV
+console.log(NODE_ENV);
 
 if (
-  NODE_ENV === "production" && // solo en producción usar HTTPS
+  NODE_ENV === "production" && 
   fs.existsSync("qa.tierragro.com.key") &&
   fs.existsSync("qa.tierragro.com.crt") &&
   fs.existsSync("qa.intermediate.crt")
