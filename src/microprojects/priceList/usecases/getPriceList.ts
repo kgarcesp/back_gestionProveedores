@@ -46,12 +46,14 @@ export default class GetListaPrecios {
         return entity.toObject(); // Convierte la entidad en un objeto simple
       });
 
+
+
       // Llamamos al repositorio para insertar los registros
       const inserted = await this.repository.insertarListPrecios(listaPreciosEntities);
       return inserted;
     } catch (error) {
       console.error("Error en newListPrecios:", error);
-      throw error; // Propagamos el error para que el controlador lo maneje
+      throw error; 
     }
   }
 }

@@ -1,4 +1,3 @@
-// src/microprojects/priceList/domain/PriceList.ts
 import { PriceListItem } from "../../../shared/types/priceList";
 
 export default class PriceList {
@@ -24,11 +23,10 @@ export default class PriceList {
       DESC1: normalizeNumber(data.DESC1),
       DESC2: normalizeNumber(data.DESC2),
       PROVEEDOR: data.PROVEEDOR ?? null,
-      // si agregas campos en shared/types, normalízalos acá
+
     };
   }
 
-  // devuelve el objeto plano con la forma esperada por el repository (PriceListItem)
   public toObject(): PriceListItem {
     return { ...this.data };
   }

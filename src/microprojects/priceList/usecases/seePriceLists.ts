@@ -16,7 +16,7 @@ export default class SeePriceLists {
     try {
       return await this.repository.getPrices(proveedorFilter);
     } catch (error) {
-      console.error("Error en getCombinedPrices:", error);
+      console.error( error);
       throw error;
     }
   }

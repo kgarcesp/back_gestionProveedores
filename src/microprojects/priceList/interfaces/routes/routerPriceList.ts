@@ -5,9 +5,9 @@ import { authMiddleware } from "../../../../shared/auth/authMiddleware"
 const router = Router();
 const controller = new ControllerListaPrecios();
 // authMiddleware
-router.post("/validate", controller.insertListPrecios);
-router.get("/validate-products", controller.seeListPrice);
-router.post("/update-prices",  controller.updatePrice);
-router.post("/date-validity",  controller.dateValidity);
+router.post("/validate", authMiddleware,controller.insertListPrecios);
+router.get("/validate-products",authMiddleware, controller.seeListPrice);
+router.post("/update-prices",authMiddleware,  controller.updatePrice);
+router.post("/date-validity", authMiddleware, controller.dateValidity);
 
 export default router;

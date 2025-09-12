@@ -3,6 +3,7 @@ import { PriceListItem, UpdatePriceListItem, SupplierPriceRow } from "../../../s
 import { DateValidity } from "../domain/dateValidity";
 
 export default class RepositoryListPrecios {
+  
   public async insertarListPrecios(data: PriceListItem[]): Promise<SupplierPriceRow[]> {
     if (!Array.isArray(data)) {
       throw new Error("Los datos deben ser un array");
@@ -46,14 +47,15 @@ export default class RepositoryListPrecios {
   }
 
   public async getPrices(proveedor?: string): Promise<SupplierPriceRow[]> {
+
     const client = await pool.connect();
     try {
-      const baseQuery = `
-        SELECT 
+      let baseQuery = `
+      SELECT DISTINCT
           sp.id,
           sp.cod_prov,
           sp.cod_sap,
-          pd.descripcion,
+          pd.des_material as descripcion,
           sp.costo_unitario,
           CASE 
               WHEN sp.descuento1 = TRUNC(sp.descuento1) THEN sp.descuento1::integer
@@ -63,21 +65,25 @@ export default class RepositoryListPrecios {
               WHEN sp.descuento2 = TRUNC(sp.descuento2) THEN sp.descuento2::integer
               ELSE sp.descuento2
           END AS descuento2,
-          sp.proveedor_id,
+          pd.bk_proveedor as proveedor_id,
           sp.fecha_actualizacion as fecha_actualizacion_precio,
-          pd.tipo_impuesto,
-          pd.precio_bruto,
-          pd.precio_neto,
-          pd.fecha_actualizacion as fecha_actualizacion_proveedor
-        FROM supplier_price_list sp
-        LEFT JOIN supplier_detail pd ON sp.cod_prov = pd.ref_proveedor
-      `;
+          pd.tax_1 as tipo_impuesto,
+          pd.atr_precio_efectiv as precio_bruto,
+          pd.atr_precio_efectiv as precio_neto,
+          sp.fecha_actualizacion as fecha_actualizacion_proveedor
+      FROM supplier_price_list sp
+      LEFT JOIN postgre_stg.stg_consulta_costo pd 
+        ON sp.cod_prov = pd.bk_material
+      WHERE  pd.bk_centro = '1001'
+    `;
 
-      const queryText = proveedor
-        ? `${baseQuery} WHERE sp.proveedor_id = $1 ORDER BY sp.fecha_actualizacion DESC`
-        : `${baseQuery} ORDER BY sp.fecha_actualizacion DESC`;
+      if (proveedor) {
+        baseQuery += ` AND sp.proveedor_id = $1`;
+      }
 
-      const result = await client.query(queryText, proveedor ? [proveedor] : []);
+      baseQuery += ` ORDER BY sp.fecha_actualizacion DESC`;
+
+      const result = await client.query(baseQuery, proveedor ? [proveedor] : []);
       return result.rows;
     } catch (error: any) {
       throw new Error(`Error al obtener lista de precios: ${error.message}`);
@@ -87,14 +93,15 @@ export default class RepositoryListPrecios {
   }
 
 
-public async dateValidity(data: DateValidity[]): Promise<DateValidity[]> {
-  const client = await pool.connect();
-  try {
-    const upserted: DateValidity[] = [];
 
-    for (const item of data) {
-      const result = await client.query(
-        `
+  public async dateValidity(data: DateValidity[]): Promise<DateValidity[]> {
+    const client = await pool.connect();
+    try {
+      const upserted: DateValidity[] = [];
+
+      for (const item of data) {
+        const result = await client.query(
+          `
         INSERT INTO date_validity (id_proveedor, fecha_inicio, fecha_fin)
         VALUES ($1, $2, $3)
         ON CONFLICT (id_proveedor)
@@ -102,21 +109,21 @@ public async dateValidity(data: DateValidity[]): Promise<DateValidity[]> {
                       fecha_fin = EXCLUDED.fecha_fin
         RETURNING id, id_proveedor, fecha_inicio, fecha_fin
         `,
-        [item.idProveedor, item.fecha_inicio, item.fecha_fin]
-      );
+          [item.idProveedor, item.fecha_inicio, item.fecha_fin]
+        );
 
-      if (result.rows[0]) {
-        upserted.push(result.rows[0]);
+        if (result.rows[0]) {
+          upserted.push(result.rows[0]);
+        }
       }
-    }
 
-    return upserted;
-  } catch (error: any) {
-    throw new Error(`Error en dateValidity: ${error.message}`);
-  } finally {
-    client.release();
+      return upserted;
+    } catch (error: any) {
+      throw new Error(`Error en dateValidity: ${error.message}`);
+    } finally {
+      client.release();
+    }
   }
-}
 
 
 
