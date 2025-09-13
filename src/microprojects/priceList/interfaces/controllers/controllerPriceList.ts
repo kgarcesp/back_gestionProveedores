@@ -42,7 +42,7 @@ export default class ControllerListaPrecios {
    */
 
 public insertListPrecios = async (req: Request, res: Response) => {
-  const proveedor = (req as any).user?.role;
+    const proveedor = (req as any).user?.id;
 
   if (!req.body?.data || !Array.isArray(req.body.data)) {
     return this.sendResponse(
@@ -95,7 +95,8 @@ public insertListPrecios = async (req: Request, res: Response) => {
 public seeListPrice = async (req: Request, res: Response) => {
   try {
     // tomamos como id de proveedor aquel que esta logeado
-    const proveedor = (req as any).user?.role;
+    const proveedor = (req as any).user?.id;
+console.log(proveedor);
 
     if (!proveedor) {
       return this.sendResponse(res, 400, false, null, "Proveedor no especificado");
@@ -144,7 +145,7 @@ public seeListPrice = async (req: Request, res: Response) => {
     if (!req.body?.data || !Array.isArray(req.body.data)) {      
       return this.sendResponse(res, 400, false, null, "Datos inválidos", ["Se requiere un arreglo de datos"]);
     }
-    const proveedor = (req as any).user?.role;
+    const proveedor = (req as any).user?.id;
     
     try {
 

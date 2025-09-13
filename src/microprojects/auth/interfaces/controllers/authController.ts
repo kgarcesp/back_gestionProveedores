@@ -1,30 +1,44 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { repositoryAuth } from "../../repositories/repositoryAuth";
+import { LoginUserUseCase } from "../../usecases/loginUserCase";
 
-const JWT_SECRET = process.env.JWT_SECRET as string; 
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
-export const login = (req: Request, res: Response) => {
-  const { username, password } = req.body;
+export class AuthController {
+  private loginUserUseCase: LoginUserUseCase;
 
-
-
-  if (username !== "8903166400" || password !== "1000000101") {
-    return res.status(401).json({ error: "Credenciales inválidas" });
+  constructor() {
+    const authRepository = new repositoryAuth();
+    this.loginUserUseCase = new LoginUserUseCase(authRepository);
   }
 
-  
+  login = async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
 
-  const payload = {
-    id: 1,
-    username: username,
-    role: password,
+      const user = await this.loginUserUseCase.execute(username, password);
+      if (!user) {
+        return res.status(401).json({ success: false, message: "Credenciales inválidas" });
+      }
+
+      const payload = {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        email: user.email,
+      };
+
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+
+      return res.json({
+        success: true,
+        message: "Login exitoso",
+        token,
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      return res.status(500).json({ success: false, message: "Error en el servidor" });
+    }
   };
-
-  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
-
-  return res.json({
-    success:true,
-    message: "Login exitoso",
-    token,
-  });
-};
+}
