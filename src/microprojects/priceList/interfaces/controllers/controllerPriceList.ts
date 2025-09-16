@@ -92,6 +92,8 @@ public insertListPrecios = async (req: Request, res: Response) => {
    * - Llama al caso de uso `SeePriceLists` para recuperar los datos.
    * - Devuelve las listas obtenidas o un error si ocurre un fallo.
    */
+
+  
 public seeListPrice = async (req: Request, res: Response) => {
   try {
     // tomamos como id de proveedor aquel que esta logeado
