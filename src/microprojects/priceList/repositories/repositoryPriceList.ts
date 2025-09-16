@@ -47,6 +47,7 @@ export default class RepositoryListPrecios {
   }
 
   public async getPrices(proveedor?: string): Promise<SupplierPriceRow[]> {
+console.log(proveedor);
 
     const client = await pool.connect();
     try {

@@ -96,7 +96,7 @@ public seeListPrice = async (req: Request, res: Response) => {
   try {
     // tomamos como id de proveedor aquel que esta logeado
     const proveedor = (req as any).user?.id;
-console.log(proveedor);
+
 
     if (!proveedor) {
       return this.sendResponse(res, 400, false, null, "Proveedor no especificado");
