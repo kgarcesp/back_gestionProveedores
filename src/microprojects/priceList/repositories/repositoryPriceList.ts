@@ -51,8 +51,7 @@ console.log(proveedor);
 
     const client = await pool.connect();
     try {
-      let baseQuery = `
-      SELECT DISTINCT
+      let baseQuery = `SELECT DISTINCT
           sp.id,
           sp.cod_prov,
           sp.cod_sap,
@@ -73,13 +72,13 @@ console.log(proveedor);
           pd.atr_precio_efectiv as precio_neto,
           sp.fecha_actualizacion as fecha_actualizacion_proveedor
       FROM supplier_price_list sp
-      LEFT JOIN postgre_stg.stg_consulta_costo pd 
+      LEFT JOIN postgre_sap.stg_consulta_costo pd 
         ON sp.cod_prov = pd.bk_material
-      WHERE  pd.bk_centro = '1001'
+      WHERE  pd.bk_centro = '1001' 
     `;
 
       if (proveedor) {
-        baseQuery += ` AND sp.proveedor_id = $1`;
+        baseQuery += ` AND pd.bk_proveedor = $1`;
       }
 
       baseQuery += ` ORDER BY sp.fecha_actualizacion DESC`;
