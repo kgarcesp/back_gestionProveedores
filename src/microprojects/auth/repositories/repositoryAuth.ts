@@ -18,7 +18,6 @@ export class repositoryAuth {
 
     const user = rows[0];
 
-    // Validamos: la contraseña debe ser igual al id_proveedor
     if (String(user.id) !== password) return null;
 
     return {

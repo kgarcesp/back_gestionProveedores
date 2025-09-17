@@ -100,6 +100,7 @@ public seeListPrice = async (req: Request, res: Response) => {
     const proveedor = (req as any).user?.id;
 
 
+
     if (!proveedor) {
       return this.sendResponse(res, 400, false, null, "Proveedor no especificado");
     }

@@ -18,7 +18,7 @@ export const authMiddleware = (
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    (req as any).user = decoded; // ahora tiene { username, password, iat, exp }
+    (req as any).user = decoded; 
     next();
   } catch (error) {
     console.error("Error verificando token:", error);

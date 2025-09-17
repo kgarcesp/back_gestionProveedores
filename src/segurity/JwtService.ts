@@ -8,7 +8,7 @@ export class JwtService {
   }
 
   generateToken(payload: object, expiresIn: string | number = "1h"): string {
-    const options: SignOptions = { expiresIn: expiresIn as any }; // 👈 fix
+    const options: SignOptions = { expiresIn: expiresIn as any }; 
     return jwt.sign(payload, this.secret, options);
   }
 

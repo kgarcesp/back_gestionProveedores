@@ -18,6 +18,8 @@ export class AuthController {
       const { username, password } = req.body;
 
       const user = await this.loginUserUseCase.execute(username, password);
+
+  
       if (!user) {
         return res.status(401).json({ success: false, message: "Credenciales inválidas" });
       }
