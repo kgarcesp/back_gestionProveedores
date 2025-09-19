@@ -3,14 +3,16 @@ import GetListaPrecios from "../../usecases/getPriceList";
 import SeePriceLists from "../../usecases/seePriceLists";
 import UpdateLists from "../../usecases/updateLists";
 import DateValidityUsecase from "../../usecases/dateValidityUpdate";
+import getPricingtemplate from "../../usecases/getPricingTemplate";
 
 export default class ControllerListaPrecios {
-  
+
   // Casos de uso que encapsulan la lógica de negocio
   private registeListPrecios = new GetListaPrecios();
   private priceLists = new SeePriceLists();
   private updateListsFinish = new UpdateLists();
   private dateValidityUsecase = new DateValidityUsecase();
+  private pricingtemplate = new getPricingtemplate();
 
   /**
    * Método centralizado para enviar respuestas HTTP con un formato consistente.
@@ -41,48 +43,48 @@ export default class ControllerListaPrecios {
    * - Devuelve un mensaje de éxito o error.
    */
 
-public insertListPrecios = async (req: Request, res: Response) => {
+  public insertListPrecios = async (req: Request, res: Response) => {
     const proveedor = (req as any).user?.id;
 
-  if (!req.body?.data || !Array.isArray(req.body.data)) {
-    return this.sendResponse(
-      res,
-      400,
-      false,
-      null,
-      "Datos inválidos",
-      ["Se requiere un arreglo de datos"]
-    );
-  }
+    if (!req.body?.data || !Array.isArray(req.body.data)) {
+      return this.sendResponse(
+        res,
+        400,
+        false,
+        null,
+        "Datos inválidos",
+        ["Se requiere un arreglo de datos"]
+      );
+    }
 
-  try {
-    // Añadimos el proveedor_id a cada item de la lista
-    const dataWithProveedor = req.body.data.map((item: any) => ({
-      ...item,
-      PROVEEDOR: proveedor,
-    }));
+    try {
+      // Añadimos el proveedor_id a cada item de la lista
+      const dataWithProveedor = req.body.data.map((item: any) => ({
+        ...item,
+        PROVEEDOR: proveedor,
+      }));
 
-    const result = await this.registeListPrecios.newListPrecios(dataWithProveedor);
+      const result = await this.registeListPrecios.newListPrecios(dataWithProveedor);
 
-    return this.sendResponse(
-      res,
-      200,
-      true,
-      result,
-      "Lista de precios procesada correctamente"
-    );
-  } catch (error: any) {
-    console.error("Error en insertListPrecios:", error);
-    return this.sendResponse(
-      res,
-      500,
-      false,
-      null,
-      error.message || "Error interno del servidor",
-      [error.message]
-    );
-  }
-};
+      return this.sendResponse(
+        res,
+        200,
+        true,
+        result,
+        "Lista de precios procesada correctamente"
+      );
+    } catch (error: any) {
+      console.error("Error en insertListPrecios:", error);
+      return this.sendResponse(
+        res,
+        500,
+        false,
+        null,
+        error.message || "Error interno del servidor",
+        [error.message]
+      );
+    }
+  };
 
 
   /**
@@ -93,25 +95,25 @@ public insertListPrecios = async (req: Request, res: Response) => {
    * - Devuelve las listas obtenidas o un error si ocurre un fallo.
    */
 
-  
-public seeListPrice = async (req: Request, res: Response) => {
-  try {
-    // tomamos como id de proveedor aquel que esta logeado
-    const proveedor = (req as any).user?.id;
+
+  public seeListPrice = async (req: Request, res: Response) => {
+    try {
+      // tomamos como id de proveedor aquel que esta logeado
+      const proveedor = (req as any).user?.id;
 
 
 
-    if (!proveedor) {
-      return this.sendResponse(res, 400, false, null, "Proveedor no especificado");
+      if (!proveedor) {
+        return this.sendResponse(res, 400, false, null, "Proveedor no especificado");
+      }
+
+      const result = await this.priceLists.getCombinedPrices(proveedor);
+      return this.sendResponse(res, 200, true, result, "Datos obtenidos correctamente");
+    } catch (error: any) {
+      console.error("Error en seeListPrice:", error);
+      return this.sendResponse(res, 500, false, null, "Error al obtener la lista de precios", [error.message]);
     }
-
-    const result = await this.priceLists.getCombinedPrices(proveedor);
-    return this.sendResponse(res, 200, true, result, "Datos obtenidos correctamente");
-  } catch (error: any) {
-    console.error("Error en seeListPrice:", error);
-    return this.sendResponse(res, 500, false, null, "Error al obtener la lista de precios", [error.message]);
-  }
-};
+  };
 
   /**
    * Actualiza precios existentes.
@@ -120,16 +122,17 @@ public seeListPrice = async (req: Request, res: Response) => {
    * - Llama al caso de uso `UpdateLists` para ejecutar la actualización.
    * - Devuelve un mensaje de confirmación o error.
    */
+
   public updatePrice = async (req: Request, res: Response) => {
     if (!req.body?.data || !Array.isArray(req.body.data)) {
       return this.sendResponse(res, 400, false, null, "Datos inválidos", ["Se requiere un arreglo de datos"]);
     }
 
     try {
-      
+
       const result = await this.updateListsFinish.updateListsPrecios(req.body.data);
 
-      
+
       return this.sendResponse(res, 200, true, result, "Lista de precios actualizada correctamente");
     } catch (error: any) {
       console.error("Error en updatePrice:", error);
@@ -145,11 +148,11 @@ public seeListPrice = async (req: Request, res: Response) => {
    * - Devuelve el resultado de la operación o un error.
    */
   public dateValidity = async (req: Request, res: Response) => {
-    if (!req.body?.data || !Array.isArray(req.body.data)) {      
+    if (!req.body?.data || !Array.isArray(req.body.data)) {
       return this.sendResponse(res, 400, false, null, "Datos inválidos", ["Se requiere un arreglo de datos"]);
     }
     const proveedor = (req as any).user?.id;
-    
+
     try {
 
 
@@ -162,6 +165,28 @@ public seeListPrice = async (req: Request, res: Response) => {
     } catch (error: any) {
       console.error("Error en dateValidity:", error);
       return this.sendResponse(res, 500, false, null, "Error actualizando validez de fechas", [error.message]);
+    }
+  };
+
+
+
+
+
+
+  public getPricingtemplate = async (req: Request, res: Response) => {
+    try {
+
+      const proveedor = (req as any).user?.id;
+
+      if (!proveedor) {
+        return this.sendResponse(res, 400, false, null, "Proveedor no especificado");
+      }
+
+      const result = await this.pricingtemplate.getPricingTemplate(proveedor);
+      return this.sendResponse(res, 200, true, result, "Datos obtenidos correctamente");
+    } catch (error: any) {
+      console.error("Error en seeListPrice:", error);
+      return this.sendResponse(res, 500, false, null, "Error al obtener la lista de precios", [error.message]);
     }
   };
 }

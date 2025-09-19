@@ -3,7 +3,7 @@ import { PriceListItem, UpdatePriceListItem, SupplierPriceRow } from "../../../s
 import { DateValidity } from "../domain/dateValidity";
 
 export default class RepositoryListPrecios {
-  
+
   public async insertarListPrecios(data: PriceListItem[]): Promise<SupplierPriceRow[]> {
     if (!Array.isArray(data)) {
       throw new Error("Los datos deben ser un array");
@@ -91,6 +91,35 @@ export default class RepositoryListPrecios {
     }
   }
 
+
+
+public async getPricingTemplate(proveedor?: string): Promise<SupplierPriceRow[]> {
+  const client = await pool.connect();
+  try {
+    // Consulta base con alias 'sc'
+    let baseQuery = `
+      SELECT sc.bk_material,
+             sc.des_material,
+             sc.atr_precio_efectiv
+      FROM postgre_sap.stg_consulta_costo sc
+      WHERE sc.bk_centro = '1001'
+    `;
+
+    // Si llega el proveedor, se agrega al WHERE
+    if (proveedor) {
+      baseQuery += ` AND sc.bk_proveedor = $1`;
+    }
+
+    // Ejecutar consulta con o sin parámetro
+    const result = await client.query(baseQuery, proveedor ? [proveedor] : []);
+
+    return result.rows as SupplierPriceRow[];
+  } catch (error: any) {
+    throw new Error(`Error al obtener lista de precios: ${error.message}`);
+  } finally {
+    client.release();
+  }
+}
 
 
   public async dateValidity(data: DateValidity[]): Promise<DateValidity[]> {
