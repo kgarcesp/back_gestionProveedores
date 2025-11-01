@@ -38,8 +38,8 @@ export class AuthController {
         message: "Login exitoso",
         token,
       });
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (error: any) {
+      console.error("Login error:", error.message);
       return res.status(500).json({ success: false, message: "Error en el servidor" });
     }
   };

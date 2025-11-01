@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
+import morgan from "morgan";
 import priceListRoutes from "./microprojects/priceList/interfaces/routes/routerPriceList";
 import routerAuth from "./microprojects/auth/interfaces/routes/routerAuth";
+
 
 const app = express();
 
@@ -15,6 +17,7 @@ app.use(cors({
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(morgan("common"));
 
 // Rutas
 app.use("/api/price-lists", priceListRoutes);

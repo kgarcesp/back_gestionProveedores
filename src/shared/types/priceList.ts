@@ -1,10 +1,11 @@
 // src/shared/types/priceList.ts
 export interface PriceListItem {
-  COD_PROV: string;                      // obligatorio (id o código del proveedor)
-  COD_SAP?: string | null;              // opcional
-  COSTO_UNIT?: number | string | null;  // puede venir como string desde el cliente
-  DESC1?: number | string | null;
-  DESC2?: number | string | null;
+  COD_PROV: string;                      // obligatorio (id o código del proveedor) - Alfanumérico, máximo 12 caracteres
+  COD_SAP?: string | null;              // opcional - Numérico, máximo 6 dígitos
+  DESCRIP?: string | null;              // opcional - Alfanumérico, máximo 40 caracteres contando espacios
+  COSTO_UNIT?: number | string | null;  // puede venir como string desde el cliente - Decimal
+  DESC1?: number | string | null;       // Numérico, máximo 3 dígitos
+  DESC2?: number | string | null;       // Numérico, máximo 3 dígitos
   PROVEEDOR?: number | null;             // id del proveedor
   // agrega aquí nuevos campos que vayan a compartirse entre capas
 }

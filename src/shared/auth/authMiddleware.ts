@@ -20,8 +20,8 @@ export const authMiddleware = (
     const decoded = jwt.verify(token, JWT_SECRET);
     (req as any).user = decoded; 
     next();
-  } catch (error) {
-    console.error("Error verificando token:", error);
+  } catch (error: any) {
+    console.error("Error verificando token:", error.message);
     return res.status(403).json({ error: "Token inválido o expirado" });
   }
 };

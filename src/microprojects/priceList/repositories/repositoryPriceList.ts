@@ -2,8 +2,46 @@ import pool from "../../../config/database";
 import { PriceListItem, UpdatePriceListItem, SupplierPriceRow } from "../../../shared/types/priceList";
 import { DateValidity } from "../domain/dateValidity";
 
+/**
+ * Repositorio para gestionar operaciones de persistencia de listas de precios.
+ * 
+ * Esta clase maneja todas las operaciones de base de datos relacionadas con
+ * listas de precios de proveedores, incluyendo inserción, actualización,
+ * consultas y validación de fechas de vigencia.
+ * 
+ * @class RepositoryListPrecios
+ * @module PriceList/Repositories
+ */
 export default class RepositoryListPrecios {
 
+  /**
+   * Inserta nuevas listas de precios en el sistema.
+   * 
+   * Realiza la inserción de múltiples items de listas de precios en una
+   * transacción, asegurando que todos los registros se inserten correctamente
+   * o se revierta la operación completa en caso de error.
+   * 
+   * @async
+   * @public
+   * @param {PriceListItem[]} data - Array de items de lista de precios a insertar
+   * @returns {Promise<SupplierPriceRow[]>} Array de registros insertados con sus IDs asignados
+   * 
+   * @throws {Error} Si los datos no son un array
+   * @throws {Error} Si ocurre un error durante la inserción
+   * 
+   * @example
+   * const repository = new RepositoryListPrecios();
+   * const insertados = await repository.insertarListPrecios([
+   *   {
+   *     COD_PROV: '12345',
+   *     COD_SAP: 'SAP001',
+   *     COSTO_UNIT: 100.50,
+   *     DESC1: 10,
+   *     DESC2: 5,
+   *     PROVEEDOR: 1
+   *   }
+   * ]);
+   */
   public async insertarListPrecios(data: PriceListItem[]): Promise<SupplierPriceRow[]> {
     if (!Array.isArray(data)) {
       throw new Error("Los datos deben ser un array");
@@ -46,6 +84,29 @@ export default class RepositoryListPrecios {
     }
   }
 
+  /**
+   * Obtiene listas de precios combinadas con información de SAP.
+   * 
+   * Realiza una consulta que combina datos de las listas de precios locales
+   * con información adicional del sistema SAP, incluyendo descripciones,
+   * precios efectivos, tipos de impuestos y fechas de actualización.
+   * 
+   * @async
+   * @public
+   * @param {string} [proveedor] - Código del proveedor para filtrar (opcional)
+   * @returns {Promise<SupplierPriceRow[]>} Array de registros con información completa
+   * 
+   * @throws {Error} Si ocurre un error durante la consulta
+   * 
+   * @example
+   * const repository = new RepositoryListPrecios();
+   * 
+   * // Obtener todas las listas
+   * const todas = await repository.getPrices();
+   * 
+   * // Obtener listas de un proveedor específico
+   * const proveedor = await repository.getPrices('100');
+   */
   public async getPrices(proveedor?: string): Promise<SupplierPriceRow[]> {
 
     const client = await pool.connect();
@@ -93,7 +154,30 @@ export default class RepositoryListPrecios {
 
 
 
-public async getPricingTemplate(proveedor?: string): Promise<SupplierPriceRow[]> {
+  /**
+   * Obtiene plantilla de precios desde SAP para crear listas.
+   * 
+   * Recupera información base de productos desde el sistema SAP, incluyendo
+   * códigos de material, descripciones y precios efectivos. Esta información
+   * sirve como plantilla para crear o actualizar listas de precios.
+   * 
+   * @async
+   * @public
+   * @param {string} [proveedor] - Código del proveedor para filtrar (opcional)
+   * @returns {Promise<SupplierPriceRow[]>} Array con información de productos desde SAP
+   * 
+   * @throws {Error} Si ocurre un error durante la consulta
+   * 
+   * @example
+   * const repository = new RepositoryListPrecios();
+   * 
+   * // Obtener plantilla completa
+   * const plantilla = await repository.getPricingTemplate();
+   * 
+   * // Obtener plantilla de un proveedor
+   * const plantillaProveedor = await repository.getPricingTemplate('100');
+   */
+  public async getPricingTemplate(proveedor?: string): Promise<SupplierPriceRow[]> {
   const client = await pool.connect();
   try {
     // Consulta base con alias 'sc'
@@ -122,6 +206,31 @@ public async getPricingTemplate(proveedor?: string): Promise<SupplierPriceRow[]>
 }
 
 
+  /**
+   * Inserta o actualiza fechas de validez de listas de precios.
+   * 
+   * Utiliza operación UPSERT (INSERT ... ON CONFLICT) para insertar nuevas
+   * validaciones de fecha o actualizar las existentes basándose en el
+   * id_proveedor. Esto asegura que cada proveedor tenga una única validez activa.
+   * 
+   * @async
+   * @public
+   * @param {DateValidity[]} data - Array de validaciones de fecha a procesar
+   * @returns {Promise<DateValidity[]>} Array de validaciones insertadas/actualizadas
+   * 
+   * @throws {Error} Si ocurre un error durante la operación
+   * 
+   * @example
+   * const repository = new RepositoryListPrecios();
+   * const validaciones = await repository.dateValidity([
+   *   {
+   *     id: 1,
+   *     idProveedor: 100,
+   *     fecha_inicio: '2024-01-01',
+   *     fecha_fin: '2024-12-31'
+   *   }
+   * ]);
+   */
   public async dateValidity(data: DateValidity[]): Promise<DateValidity[]> {
     const client = await pool.connect();
     try {
@@ -156,6 +265,43 @@ public async getPricingTemplate(proveedor?: string): Promise<SupplierPriceRow[]>
 
 
 
+  /**
+   * Actualiza precios en listas existentes.
+   * 
+   * Actualiza selectivamente costos unitarios y descuentos de items en listas
+   * de precios. Solo actualiza registros donde los valores son diferentes a los
+   * existentes, evitando actualizaciones innecesarias. La operación se realiza
+   * en una transacción para garantizar consistencia.
+   * 
+   * @async
+   * @public
+   * @param {UpdatePriceListItem[]} data - Array de items a actualizar
+   * @param {number} data[].id - ID del registro a actualizar
+   * @param {number} data[].costo_unitario - Nuevo costo unitario
+   * @param {number} data[].descuento1 - Nuevo primer descuento
+   * @param {number} data[].descuento2 - Nuevo segundo descuento
+   * 
+   * @returns {Promise<Object>} Resultado de la operación
+   * @returns {number} return.updatedCount - Cantidad de registros actualizados
+   * @returns {SupplierPriceRow[]} return.updatedItems - Array de registros actualizados
+   * @returns {string} return.message - Mensaje descriptivo del resultado
+   * 
+   * @throws {Error} Si los datos no son un array
+   * @throws {Error} Si ocurre un error durante la actualización
+   * 
+   * @example
+   * const repository = new RepositoryListPrecios();
+   * const resultado = await repository.updateListPrice([
+   *   {
+   *     id: 1,
+   *     costo_unitario: 150.00,
+   *     descuento1: 10,
+   *     descuento2: 5
+   *   }
+   * ]);
+   * console.log(resultado.message);
+   * // "1 registros actualizados correctamente"
+   */
   public async updateListPrice(data: UpdatePriceListItem[]): Promise<{
     updatedCount: number;
     updatedItems: SupplierPriceRow[];
